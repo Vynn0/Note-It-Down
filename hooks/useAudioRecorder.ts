@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Audio } from 'expo-av';
 import * as audioService from '../services/audioService';
+import { summarizeText } from '../services/summarizeService';
+import { saveSummary } from '../services/storageService';
 
 export default function useAudioRecorder() {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -38,8 +40,20 @@ export default function useAudioRecorder() {
             const recordingInstance = recording;
             setRecording(null);
 
+            // Get transcription
             const text = await audioService.stopRecordingAndTranscribe(recordingInstance);
             setTranscription(text);
+
+            // Auto-summarize if transcription is successful and has content
+            if (text && text.trim().length > 10) {
+                try {
+                    const summary = await summarizeText(text);
+                    await saveSummary(summary);
+                } catch (summaryError: any) {
+                    console.warn('Failed to summarize:', summaryError.message);
+                    // Don't show error to user, just log it
+                }
+            }
         } catch (err: any) {
             setError('Transcription failed: ' + (err?.message || String(err)));
         } finally {
