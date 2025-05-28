@@ -1,14 +1,50 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
+import { Button, ActivityIndicator, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import React from 'react';
+import useAudioRecorder from '../../hooks/useAudioRecorder';
 
 export default function TabTwoScreen() {
+  const {
+    recording,
+    transcription,
+    isLoading,
+    error,
+    permissionGranted,
+    startRecording,
+    stopRecording
+  } = useAudioRecorder();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/two.tsx" />
+      <Text style={styles.title}>Speech to Text</Text>
+
+      {recording ? (
+        <View style={styles.recordingIndicator}>
+          <View style={styles.recordingDot} />
+          <Text style={styles.recordingText}>Recording in progress...</Text>
+        </View>
+      ) : (
+        <Text style={styles.instructions}>
+          Bicara dengan jelas dalam Bahasa Indonesia. Jaga jarak ponsel sekitar 15-20cm dari mulut Anda.
+        </Text>
+      )}
+
+      <Button
+        title={recording ? 'Stop Recording' : 'Start Recording'}
+        onPress={recording ? stopRecording : startRecording}
+        disabled={isLoading || !permissionGranted}
+      />
+
+      {isLoading && <ActivityIndicator size="large" style={styles.loader} />}
+
+      {error ? (
+        <Text style={styles.error}>{error}</Text>
+      ) : transcription ? (
+        <View style={styles.resultContainer}>
+          <Text style={styles.resultLabel}>Transkripsi:</Text>
+          <Text style={styles.resultText}>{transcription}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -16,16 +52,58 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  loader: {
+    marginTop: 20,
+  },
+  error: {
+    color: 'red',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  resultContainer: {
+    marginTop: 30,
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+  },
+  resultLabel: {
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'black',
+  },
+  resultText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: 'black',
+  },
+  recordingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    justifyContent: 'center',
+  },
+  recordingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'red',
+    marginRight: 8,
+  },
+  recordingText: {
+    color: 'red',
+  },
+  instructions: {
+    marginBottom: 20,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
