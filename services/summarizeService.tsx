@@ -13,7 +13,7 @@ export const summarizeText = async (text: string): Promise<Summary> => {
         throw new Error('Gemini API key not found');
     }
 
-    const prompt = `Summarize the following text in Indonesian. Provide a clear, concise summary that captures the main points. Also suggest a short title (max 5 words) for this content:
+    const prompt = `Summarize the following text in Indonesian. For context, the text provided came from Speech to Text, so expect a lot of unclear jargons, and you must understand contexts. Provide a clear, concise summary that captures the main points. Also suggest a short title (max 5 words) for this content:
 
     Text to summarize:
     ${text}
@@ -23,7 +23,6 @@ export const summarizeText = async (text: string): Promise<Summary> => {
     Summary: [summary here]`;
 
     try {
-        // Updated API endpoint for Gemini 2.0 Flash
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
@@ -39,26 +38,9 @@ export const summarizeText = async (text: string): Promise<Summary> => {
                     temperature: 0.7,
                     topK: 1,
                     topP: 1,
-                    maxOutputTokens: 2048,
+                    maxOutputTokens: 4096,
                 },
-                safetySettings: [
-                    {
-                        category: "HARM_CATEGORY_HARASSMENT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_HATE_SPEECH",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    },
-                    {
-                        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                    }
-                ]
+                safetySettings: []
             })
         });
 

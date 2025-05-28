@@ -1,4 +1,4 @@
-import { Button, ActivityIndicator, StyleSheet } from 'react-native';
+import { Button, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import React from 'react';
 import useAudioRecorder from '../../hooks/useAudioRecorder';
@@ -10,41 +10,76 @@ export default function TabTwoScreen() {
     isLoading,
     error,
     permissionGranted,
+    recordingTime,
     startRecording,
     stopRecording
   } = useAudioRecorder();
 
+  // Format time as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Speech to Text</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+      >
+        <Text style={styles.title}>Speech to Text</Text>
 
-      {recording ? (
-        <View style={styles.recordingIndicator}>
-          <View style={styles.recordingDot} />
-          <Text style={styles.recordingText}>Recording in progress...</Text>
+        {recording ? (
+          <View style={styles.recordingIndicator}>
+            <View style={styles.recordingDot} />
+            <View style={styles.recordingTextContainer}>
+              <Text style={styles.recordingText}>Recording in progress...</Text>
+              <Text style={styles.recordingTimer}>{formatTime(recordingTime)}</Text>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.instructions}>
+            Bicara dengan jelas dalam Bahasa Indonesia. Jaga jarak ponsel sekitar 15-20cm dari mulut Anda.
+          </Text>
+        )}
+
+        <View style={styles.buttonContainer}>
+          <Button
+            title={recording ? 'Stop Recording' : 'Start Recording'}
+            onPress={recording ? stopRecording : startRecording}
+            disabled={isLoading || !permissionGranted}
+          />
         </View>
-      ) : (
-        <Text style={styles.instructions}>
-          Bicara dengan jelas dalam Bahasa Indonesia. Jaga jarak ponsel sekitar 15-20cm dari mulut Anda.
-        </Text>
-      )}
 
-      <Button
-        title={recording ? 'Stop Recording' : 'Start Recording'}
-        onPress={recording ? stopRecording : startRecording}
-        disabled={isLoading || !permissionGranted}
-      />
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" style={styles.loader} />
+            <Text style={styles.loadingText}>
+              Processing transcription and generating summary...
+            </Text>
+          </View>
+        )}
 
-      {isLoading && <ActivityIndicator size="large" style={styles.loader} />}
-
-      {error ? (
-        <Text style={styles.error}>{error}</Text>
-      ) : transcription ? (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultLabel}>Transkripsi:</Text>
-          <Text style={styles.resultText}>{transcription}</Text>
-        </View>
-      ) : null}
+        {error ? (
+          <Text style={styles.error}>{error}</Text>
+        ) : transcription ? (
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultLabel}>Transkripsi:</Text>
+            <ScrollView
+              style={styles.transcriptionScroll}
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator={true}
+            >
+              <Text style={styles.resultText}>{transcription}</Text>
+            </ScrollView>
+            <Text style={styles.successText}>
+              ✅ Summary saved! Check the Summaries tab.
+            </Text>
+          </View>
+        ) : null}
+      </ScrollView>
     </View>
   );
 }
@@ -52,8 +87,14 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: 'black',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 24,
@@ -61,8 +102,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  loader: {
+  buttonContainer: {
+    marginVertical: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
     marginTop: 20,
+  },
+  loader: {
+    marginBottom: 10,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
   error: {
     color: 'red',
@@ -74,16 +127,27 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
+    maxHeight: 300,
   },
   resultLabel: {
     fontWeight: 'bold',
     marginBottom: 10,
     color: 'black',
   },
+  transcriptionScroll: {
+    maxHeight: 180,
+  },
   resultText: {
     fontSize: 16,
     lineHeight: 24,
     color: 'black',
+  },
+  successText: {
+    color: 'green',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
   },
   recordingIndicator: {
     flexDirection: 'row',
@@ -96,10 +160,22 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     backgroundColor: 'red',
-    marginRight: 8,
+    marginRight: 12,
+  },
+  recordingTextContainer: {
+    alignItems: 'center',
   },
   recordingText: {
     color: 'red',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  recordingTimer: {
+    color: 'red',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 4,
+    fontFamily: 'monospace', // Makes numbers align better
   },
   instructions: {
     marginBottom: 20,
