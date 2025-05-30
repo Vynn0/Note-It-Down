@@ -1,10 +1,19 @@
-import { StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, Clipboard } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import useSummaries from '@/hooks/useSummaries';
 import { Summary } from '@/services/summarizeService';
 
 export default function TabOneScreen() {
   const { summaries, isLoading, error, refreshSummaries, deleteSummary } = useSummaries();
+
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await Clipboard.setString(text);
+      Alert.alert('Copied!', `${type} copied to clipboard`);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to copy to clipboard');
+    }
+  };
 
   const handleSummaryPress = (summary: Summary) => {
     Alert.alert(
@@ -13,43 +22,108 @@ export default function TabOneScreen() {
       [
         {
           text: 'View Original',
-          onPress: () => Alert.alert('Original Transcription', summary.originalText),
+          onPress: () => {
+            Alert.alert(
+              'Original Transcription',
+              summary.originalText,
+              [
+                {
+                  text: 'Copy',
+                  onPress: () => copyToClipboard(summary.originalText, 'Original text'),
+                },
+                { text: 'Close', style: 'cancel' },
+              ],
+              { cancelable: true }
+            );
+          },
         },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Delete Summary',
-              'Are you sure you want to delete this summary?',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => deleteSummary(summary.id) },
-              ]
-            );
-          },
+          onPress: () => handleDelete(summary),
         },
         { text: 'Close', style: 'cancel' },
-      ]
+      ],
+      { cancelable: true }
     );
   };
 
+  const handleDelete = (summary: Summary) => {
+    Alert.alert(
+      'Delete Summary',
+      `Are you sure you want to delete "${summary.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteSummary(summary.id);
+            Alert.alert('Deleted', 'Summary has been deleted');
+          }
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+
+  const handleQuickCopy = (summary: Summary) => {
+    Alert.alert(
+      'Quick Copy',
+      'What would you like to copy?',
+      [
+        {
+          text: 'Copy Summary',
+          onPress: () => copyToClipboard(summary.content, 'Summary'),
+        },
+        {
+          text: 'Copy Original',
+          onPress: () => copyToClipboard(summary.originalText, 'Original text'),
+        },
+        {
+          text: 'Copy Both',
+          onPress: () => {
+            const combinedText = `Title: ${summary.title}\n\nSummary:\n${summary.content}\n\nOriginal Text:\n${summary.originalText}`;
+            copyToClipboard(combinedText, 'Complete summary');
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  // ...rest of your component remains exactly the same
   const renderSummary = ({ item }: { item: Summary }) => (
-    <TouchableOpacity style={styles.summaryCard} onPress={() => handleSummaryPress(item)}>
-      <Text style={styles.summaryTitle}>{item.title}</Text>
-      <Text style={styles.summaryContent} numberOfLines={3}>
-        {item.content}
-      </Text>
-      <Text style={styles.summaryDate}>
-        {new Date(item.createdAt).toLocaleDateString('id-ID', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </Text>
-    </TouchableOpacity>
+    <View style={styles.summaryCard}>
+      <TouchableOpacity
+        style={styles.summaryContent}
+        onPress={() => handleSummaryPress(item)}
+      >
+        <Text style={styles.summaryTitle}>{item.title}</Text>
+        <Text style={styles.summaryText} numberOfLines={3}>
+          {item.content}
+        </Text>
+        <Text style={styles.summaryDate}>
+          {new Date(item.createdAt).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Quick Copy Button */}
+      <TouchableOpacity
+        style={styles.copyButton}
+        onPress={() => handleQuickCopy(item)}
+      >
+        <Text style={styles.copyButtonText}>📋</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -81,6 +155,7 @@ export default function TabOneScreen() {
   );
 }
 
+// ...styles remain exactly the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -101,7 +176,6 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     backgroundColor: '#f9f9f9',
-    padding: 16,
     marginVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
@@ -111,6 +185,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  summaryContent: {
+    flex: 1,
+    padding: 16,
   },
   summaryTitle: {
     fontSize: 18,
@@ -118,7 +198,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#333',
   },
-  summaryContent: {
+  summaryText: {
     fontSize: 14,
     lineHeight: 20,
     color: '#666',
@@ -128,6 +208,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     fontStyle: 'italic',
+  },
+  copyButton: {
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    marginLeft: 8,
+  },
+  copyButtonText: {
+    fontSize: 20,
   },
   emptyContainer: {
     flex: 1,

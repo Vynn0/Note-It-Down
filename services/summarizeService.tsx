@@ -13,14 +13,29 @@ export const summarizeText = async (text: string): Promise<Summary> => {
         throw new Error('Gemini API key not found');
     }
 
-    const prompt = `Summarize the following text in Indonesian. For context, the text provided came from Speech to Text, so expect a lot of unclear jargons, and you must understand contexts. Provide a clear, concise summary that captures the main points. Also suggest a short title (max 5 words) for this content:
+    const prompt = `You are analyzing a speech-to-text transcription that may contain inaccuracies. Please create a comprehensive summary in Indonesian.
 
-    Text to summarize:
+    CONTEXT AWARENESS:
+    - This text comes from audio recording converted to text
+    - Speech recognition may have misheard words, especially technical terms and proper nouns
+    - Multiple speakers may be present (meetings, discussions, lectures)
+    - Some words may be incomplete, phonetically similar, or contextually incorrect
+    - Focus on understanding the overall meaning and main themes rather than individual word accuracy
+
+    ANALYSIS INSTRUCTIONS:
+    1. Identify the main topics and key points being discussed
+    2. Infer the correct meaning when words seem misheard (e.g., technical jargon, names, concepts)
+    3. If multiple speakers are detected, try to distinguish different viewpoints or contributions
+    4. Focus on the broader context and logical flow of ideas
+    5. Ignore filler words, incomplete sentences, and obvious transcription errors
+
+    Text to analyze:
     ${text}
 
-    Please respond in this format:
-    Title: [short title here]
-    Summary: [summary here]`;
+    Please provide your analysis in this exact format:
+    Title: [concise title, max 5 words, capturing the main topic]
+    Summary: [comprehensive summary in Indonesian that captures the essence and main points of the discussion, focusing on the overall context rather than exact wording]`;
+
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`, {

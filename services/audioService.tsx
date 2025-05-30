@@ -1,14 +1,7 @@
 import { Audio } from 'expo-av';
 
-// API key should be in .env file and accessed through process.env
-// For simplicity in this example, we'll use the key directly
 const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 
-/**
- * Start audio recording
- * @returns A new Audio.Recording instance if successful
- * @throws Error if recording fails to start
- */
 export const startRecording = async (): Promise<Audio.Recording> => {
     // Set audio mode for recording
     await Audio.setAudioModeAsync({
@@ -24,12 +17,6 @@ export const startRecording = async (): Promise<Audio.Recording> => {
     return newRecording;
 };
 
-/**
- * Stop recording and transcribe the audio
- * @param recording The active recording to stop and transcribe
- * @returns The transcribed text
- * @throws Error if transcription fails
- */
 export const stopRecordingAndTranscribe = async (
     recording: Audio.Recording
 ): Promise<string> => {
