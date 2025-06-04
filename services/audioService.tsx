@@ -1,4 +1,5 @@
 import { Audio } from 'expo-av';
+import { getWhisperModel } from './storageService';
 
 const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 
@@ -29,9 +30,12 @@ export const stopRecordingAndTranscribe = async (
         throw new Error('Recording URI is null');
     }
 
+    // Get the selected Whisper model
+    const selectedModel = await getWhisperModel();
+
     // Create FormData for API request
     const formData = new FormData();
-    formData.append('model', 'whisper-large-v3-turbo');
+    formData.append('model', selectedModel);
     formData.append('language', 'id');
 
     // Append the audio file
