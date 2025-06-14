@@ -1,7 +1,7 @@
-import { StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, Clipboard } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import useSummaries from '@/hooks/useSummaries';
 import { Summary } from '@/services/summarizeService';
+import { Alert, Clipboard, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function TabOneScreen() {
   const { summaries, isLoading, error, refreshSummaries, deleteSummary } = useSummaries();

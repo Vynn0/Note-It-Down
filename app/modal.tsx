@@ -1,9 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Alert, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
-import { saveWhisperModel, getWhisperModel } from '@/services/storageService';
+import { getWhisperModel, saveWhisperModel } from '@/services/storageService';
 
 const WHISPER_MODELS = [
   { label: 'Whisper Large V3 Turbo', value: 'whisper-large-v3-turbo' },
@@ -50,36 +50,37 @@ export default function ModalScreen() {
 
       <View style={styles.settingContainer}>
         <Text style={styles.settingLabel}>Whisper Model:</Text>
+        <View style={{ position: 'relative' }}>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setDropdownVisible(!dropdownVisible)}
+          >
+            <Text style={styles.dropdownText}>{getModelLabel(selectedModel)}</Text>
+            <Text style={styles.dropdownArrow}>{dropdownVisible ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.dropdown}
-          onPress={() => setDropdownVisible(!dropdownVisible)}
-        >
-          <Text style={styles.dropdownText}>{getModelLabel(selectedModel)}</Text>
-          <Text style={styles.dropdownArrow}>{dropdownVisible ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
-
-        {dropdownVisible && (
-          <View style={styles.dropdownMenu}>
-            {WHISPER_MODELS.map((model) => (
-              <TouchableOpacity
-                key={model.value}
-                style={[
-                  styles.dropdownItem,
-                  selectedModel === model.value && styles.selectedItem
-                ]}
-                onPress={() => handleModelSelect(model.value)}
-              >
-                <Text style={[
-                  styles.dropdownItemText,
-                  selectedModel === model.value && styles.selectedItemText
-                ]}>
-                  {model.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+          {dropdownVisible && (
+            <View style={styles.dropdownMenu}>
+              {WHISPER_MODELS.map((model) => (
+                <TouchableOpacity
+                  key={model.value}
+                  style={[
+                    styles.dropdownItem,
+                    selectedModel === model.value && styles.selectedItem
+                  ]}
+                  onPress={() => handleModelSelect(model.value)}
+                >
+                  <Text style={[
+                    styles.dropdownItemText,
+                    selectedModel === model.value && styles.selectedItemText
+                  ]}>
+                    {model.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
 
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
@@ -132,6 +133,11 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   dropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
