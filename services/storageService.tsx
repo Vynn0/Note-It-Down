@@ -5,6 +5,52 @@ import { collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } fr
 
 const SUMMARIES_KEY = 'summaries';
 const WHISPER_MODEL_KEY = 'whisperModel';
+const GROQ_API_KEY = 'groqApiKey';
+const GEMINI_API_KEY = 'geminiApiKey';
+
+// API Key functions
+export const saveGroqApiKey = async (apiKey: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(GROQ_API_KEY, apiKey);
+  } catch (error) {
+    throw new Error('Failed to save Groq API key');
+  }
+};
+
+export const getGroqApiKey = async (): Promise<string> => {
+  try {
+    const apiKey = await AsyncStorage.getItem(GROQ_API_KEY);
+    return apiKey || process.env.EXPO_PUBLIC_GROQ_API_KEY || '';
+  } catch (error) {
+    return process.env.EXPO_PUBLIC_GROQ_API_KEY || '';
+  }
+};
+
+export const saveGeminiApiKey = async (apiKey: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(GEMINI_API_KEY, apiKey);
+  } catch (error) {
+    throw new Error('Failed to save Gemini API key');
+  }
+};
+
+export const getGeminiApiKey = async (): Promise<string> => {
+  try {
+    const apiKey = await AsyncStorage.getItem(GEMINI_API_KEY);
+    return apiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
+  } catch (error) {
+    return process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
+  }
+};
+
+export const clearApiKey = async (keyType: 'groq' | 'gemini'): Promise<void> => {
+  try {
+    const key = keyType === 'groq' ? GROQ_API_KEY : GEMINI_API_KEY;
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    throw new Error(`Failed to clear ${keyType} API key`);
+  }
+};
 
 // Firebase functions
 export const saveSummaryToFirebase = async (summary: Summary): Promise<void> => {

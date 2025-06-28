@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+import { getGeminiApiKey } from './storageService';
 
 export interface Summary {
     id: string;
@@ -9,8 +9,10 @@ export interface Summary {
 }
 
 export const summarizeText = async (text: string): Promise<Summary> => {
-    if (!GEMINI_API_KEY) {
-        throw new Error('Gemini API key not found');
+    const geminiApiKey = await getGeminiApiKey();
+    
+    if (!geminiApiKey) {
+        throw new Error('Gemini API key not found. Please set your API key in Settings.');
     }
 
     const prompt = `You are analyzing a speech-to-text transcription that may contain inaccuracies. Please create a comprehensive summary in Indonesian.
@@ -36,9 +38,8 @@ export const summarizeText = async (text: string): Promise<Summary> => {
     Title: [concise title, max 5 words, capturing the main topic]
     Summary: [comprehensive summary in Indonesian that captures the essence and main points of the discussion, focusing on the overall context rather than exact wording]`;
 
-
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

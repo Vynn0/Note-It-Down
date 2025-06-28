@@ -1,7 +1,5 @@
 import { Audio } from 'expo-av';
-import { getWhisperModel } from './storageService';
-
-const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY;
+import { getWhisperModel, getGroqApiKey } from './storageService';
 
 export const startRecording = async (): Promise<Audio.Recording> => {
     // Set audio mode for recording
@@ -30,8 +28,13 @@ export const stopRecordingAndTranscribe = async (
         throw new Error('Recording URI is null');
     }
 
-    // Get the selected Whisper model
+    // Get the selected Whisper model and API key
     const selectedModel = await getWhisperModel();
+    const groqApiKey = await getGroqApiKey();
+
+    if (!groqApiKey) {
+        throw new Error('Groq API key not found. Please set your API key in Settings.');
+    }
 
     // Create FormData for API request
     const formData = new FormData();
@@ -53,7 +56,7 @@ export const stopRecordingAndTranscribe = async (
         {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Authorization': `Bearer ${groqApiKey}`,
             },
             body: formData,
         }
