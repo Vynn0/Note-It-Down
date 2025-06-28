@@ -1,67 +1,196 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, useColorScheme } from 'react-native';
-import { registerUser, loginUser } from '@/firebase/firebaseConfig';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { Text, View } from '@/components/Themed';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '@/firebase/firebaseConfig';
 
-export default function AuthScreen() {
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  const handleAuth = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter both email and password');
       return;
     }
 
-    const result = isLogin 
-      ? await loginUser(email, password)
-      : await registerUser(email, password);
-
-    if (result.success) {
-      Alert.alert('Success', isLogin ? 'Logged in successfully!' : 'Account created successfully!');
-      console.log('User:', result.user);
-    } else {
-      Alert.alert('Error', result.error);
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password.trim());
+      Alert.alert('Success', 'Logged in successfully!');
+      setEmail('');
+      setPassword('');
+    } catch (error: any) {
+      let errorMessage = 'Login failed';
+      
+      switch (error.code) {
+        case 'auth/user-not-found':
+          errorMessage = 'No user found with this email';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email format';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later';
+          break;
+        default:
+          errorMessage = error.message || 'Login failed';
+      }
+      
+      Alert.alert('Login Error', errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut(auth);
+              Alert.alert('Success', 'Logged out successfully!');
+            } catch (error: any) {
+              Alert.alert('Error', 'Failed to logout: ' + error.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  if (authLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#1976d2" />
+        <Text style={styles.loadingText}>Checking authentication...</Text>
+      </View>
+    );
+  }
+
+  if (user) {
+    // User is logged in - show profile info
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Welcome Back!</Text>
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        
+        <View style={styles.profileContainer}>
+          <Text style={styles.profileLabel}>Logged in as:</Text>
+          <Text style={styles.profileEmail}>{user.email}</Text>
+          
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileInfoLabel}>User ID:</Text>
+            <Text style={styles.profileInfoValue}>{user.uid}</Text>
+          </View>
+          
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileInfoLabel}>Email Verified:</Text>
+            <Text style={[
+              styles.profileInfoValue,
+              { color: user.emailVerified ? '#4caf50' : '#f44336' }
+            ]}>
+              {user.emailVerified ? 'Yes' : 'No'}
+            </Text>
+          </View>
+          
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileInfoLabel}>Account Created:</Text>
+            <Text style={styles.profileInfoValue}>
+              {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'Unknown'}
+            </Text>
+          </View>
+          
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileInfoLabel}>Last Sign In:</Text>
+            <Text style={styles.profileInfoValue}>
+              {user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString() : 'Unknown'}
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // User is not logged in - show login form
   return (
-    <View style={[styles.container, isDarkMode && styles.containerDark]}>
-      <Text style={[styles.title, isDarkMode && styles.titleDark]}>{isLogin ? 'Login' : 'Register'}</Text>
-      
-      <TextInput
-        style={[styles.input, isDarkMode && styles.inputDark]}
-        placeholder="Email"
-        placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      
-      <TextInput
-        style={[styles.input, isDarkMode && styles.inputDark]}
-        placeholder="Password"
-        placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity style={[styles.button, isDarkMode && styles.buttonDark]} onPress={handleAuth}>
-        <Text style={[styles.buttonText, isDarkMode && styles.buttonTextDark]}>{isLogin ? 'Login' : 'Register'}</Text>
-      </TouchableOpacity>
-      
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
+      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Email:</Text>
+        <TextInput
+          style={styles.textInput}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter your email"
+          placeholderTextColor="#999"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Password:</Text>
+        <TextInput
+          style={styles.textInput}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter your password"
+          placeholderTextColor="#999"
+          secureTextEntry={true}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      </View>
+
       <TouchableOpacity 
-        style={styles.switchButton} 
-        onPress={() => setIsLogin(!isLogin)}
+        style={[styles.loginButton, loading && styles.disabledButton]} 
+        onPress={handleLogin}
+        disabled={loading}
       >
-        <Text style={[styles.switchText, isDarkMode && styles.switchTextDark]}>
-          {isLogin ? "Don't have an account? Register" : "Have an account? Login"}
-        </Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
+
+      <Text style={styles.infoText}>
+        Note: This login is for Firebase authentication and data synchronization.
+      </Text>
     </View>
   );
 }
@@ -69,64 +198,121 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
-  },
-  containerDark: {
-    backgroundColor: '#121212',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#000',
+    marginBottom: 10,
   },
-  titleDark: {
-    color: '#fff',
+  separator: {
+    marginVertical: 20,
+    height: 1,
+    width: '80%',
   },
-  input: {
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  // Login form styles
+  inputContainer: {
+    width: '100%',
+    maxWidth: 300,
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  textInput: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 12,
-    marginBottom: 15,
     fontSize: 16,
-    color: '#000',
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
+    color: 'black',
   },
-  inputDark: {
-    borderColor: '#444',
-    backgroundColor: '#222',
-    color: '#fff',
-  },
-  button: {
-    backgroundColor: '#2196f3',
+  loginButton: {
+    backgroundColor: '#1976d2',
     padding: 15,
     borderRadius: 8,
+    width: '100%',
+    maxWidth: 300,
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 10,
   },
-  buttonDark: {
-    backgroundColor: '#1e88e5',
+  disabledButton: {
+    opacity: 0.6,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  buttonTextDark: {
-    color: '#fff',
-  },
-  switchButton: {
-    alignItems: 'center',
-  },
-  switchText: {
-    color: '#2196f3',
+  infoText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#666',
     fontSize: 14,
+    fontStyle: 'italic',
   },
-  switchTextDark: {
-    color: '#90caf9',
+  // Profile/Logged-in styles
+  profileContainer: {
+    width: '100%',
+    maxWidth: 350,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 30,
+  },
+  profileLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  profileEmail: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1976d2',
+    textAlign: 'center',
+    marginBottom: 20,
+    padding: 10,
+    backgroundColor: '#e3f2fd',
+    borderRadius: 8,
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  profileInfoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#555',
+    flex: 1,
+  },
+  profileInfoValue: {
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
+    textAlign: 'right',
+  },
+  logoutButton: {
+    backgroundColor: '#f44336',
+    padding: 15,
+    borderRadius: 8,
+    width: '100%',
+    maxWidth: 300,
+    alignItems: 'center',
   },
 });
