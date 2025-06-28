@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 
 import { Text, View } from '@/components/Themed';
 import { saveWhisperModel, getWhisperModel } from '@/services/storageService';
+import { testConnection } from '@/firebase/firebaseConfig';
 
 const WHISPER_MODELS = [
   { label: 'Whisper Large V3 Turbo', value: 'whisper-large-v3-turbo' },
@@ -14,10 +15,17 @@ const WHISPER_MODELS = [
 export default function ModalScreen() {
   const [selectedModel, setSelectedModel] = useState<string>('whisper-large-v3');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [firebaseStatus, setFirebaseStatus] = useState<string>('Checking...');
 
   useEffect(() => {
     loadSelectedModel();
+    checkFirebase();
   }, []);
+
+  const checkFirebase = () => {
+    const status = testConnection();
+    setFirebaseStatus(status);
+  };
 
   const loadSelectedModel = async () => {
     try {
@@ -48,6 +56,12 @@ export default function ModalScreen() {
       <Text style={styles.title}>Settings</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
+      {/* Firebase Status */}
+      <View style={styles.settingContainer}>
+        <Text style={styles.settingLabel}>Firebase: {firebaseStatus}</Text>
+      </View>
+
+      {/* Whisper Model Section */}
       <View style={styles.settingContainer}>
         <Text style={styles.settingLabel}>Whisper Model:</Text>
 
@@ -82,36 +96,39 @@ export default function ModalScreen() {
         )}
       </View>
 
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto' } />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0,
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     padding: 20,
+    paddingTop: 60,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
   separator: {
-    marginVertical: 30,
+    marginVertical: 20,
     height: 1,
     width: '80%',
   },
   settingContainer: {
     width: '100%',
     maxWidth: 300,
+    marginBottom: 20,
   },
   settingLabel: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
   },
+  // Dropdown styles
   dropdown: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -137,14 +154,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 4,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    maxHeight: 200,
   },
   dropdownItem: {
     padding: 12,
