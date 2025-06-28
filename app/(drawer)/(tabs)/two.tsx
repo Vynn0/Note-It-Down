@@ -1,7 +1,7 @@
 import { Button, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import React from 'react';
-import useAudioRecorder from '../../hooks/useAudioRecorder';
+import useAudioRecorder from '@/hooks/useAudioRecorder';
 
 export default function TabTwoScreen() {
   const {
