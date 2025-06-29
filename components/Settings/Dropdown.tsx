@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, useColorScheme } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
+import { useTheme } from '../Themed';
 import { styles } from './styles';
 
 const WHISPER_MODELS = [
@@ -21,8 +22,7 @@ export const WhisperModelDropdown: React.FC<WhisperModelDropdownProps> = ({
   onToggleDropdown,
   onSelectModel,
 }) => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colors, isDark } = useTheme();
 
   const getModelLabel = (value: string) => {
     return WHISPER_MODELS.find(model => model.value === value)?.label || value;
@@ -30,30 +30,24 @@ export const WhisperModelDropdown: React.FC<WhisperModelDropdownProps> = ({
 
   return (
     <View style={styles.settingContainer}>
-      <Text style={[
-        styles.settingLabel,
-        isDark ? styles.darkSettingLabel : styles.lightSettingLabel
-      ]}>
+      <Text style={[styles.settingLabel, { color: colors.text }]}>
         Whisper Model
       </Text>
       <TouchableOpacity
         style={[
           styles.dropdown,
-          isDark ? styles.darkDropdown : styles.lightDropdown
+          {
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.inputBorder,
+          }
         ]}
         onPress={onToggleDropdown}
         activeOpacity={0.8}
       >
-        <Text style={[
-          styles.dropdownText,
-          isDark ? styles.darkDropdownText : styles.lightDropdownText
-        ]}>
+        <Text style={[styles.dropdownText, { color: colors.text }]}>
           {getModelLabel(selectedModel)}
         </Text>
-        <Text style={[
-          styles.dropdownArrow,
-          isDark ? styles.darkDropdownArrow : styles.lightDropdownArrow
-        ]}>
+        <Text style={[styles.dropdownArrow, { color: colors.text }]}>
           {dropdownVisible ? '▲' : '▼'}
         </Text>
       </TouchableOpacity>
@@ -61,15 +55,18 @@ export const WhisperModelDropdown: React.FC<WhisperModelDropdownProps> = ({
       {dropdownVisible && (
         <View style={[
           styles.dropdownMenu,
-          isDark ? styles.darkDropdownMenu : styles.lightDropdownMenu
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }
         ]}>
           {WHISPER_MODELS.map((model, index) => (
             <TouchableOpacity
               key={model.value}
               style={[
                 styles.dropdownItem,
-                isDark ? styles.darkDropdownItem : styles.lightDropdownItem,
-                selectedModel === model.value && styles.selectedItem,
+                { borderBottomColor: colors.border },
+                selectedModel === model.value && { backgroundColor: colors.tint + '20' },
                 index === WHISPER_MODELS.length - 1 && { borderBottomWidth: 0 }
               ]}
               onPress={() => onSelectModel(model.value)}
@@ -77,8 +74,8 @@ export const WhisperModelDropdown: React.FC<WhisperModelDropdownProps> = ({
             >
               <Text style={[
                 styles.dropdownItemText,
-                isDark ? styles.darkDropdownItemText : styles.lightDropdownItemText,
-                selectedModel === model.value && styles.selectedItemText
+                { color: colors.text },
+                selectedModel === model.value && { color: colors.tint, fontWeight: '600' }
               ]}>
                 {model.label}
               </Text>

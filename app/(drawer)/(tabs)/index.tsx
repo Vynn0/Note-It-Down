@@ -1,9 +1,10 @@
 import { StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, Clipboard } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { Text, View, useTheme } from '@/components/Themed';
 import useSummaries from '@/hooks/useSummaries';
 import { Summary } from '@/services/summarizeService';
 
 export default function TabOneScreen() {
+  const { colors, isDark } = useTheme();
   const { summaries, isLoading, error, refreshSummaries, deleteSummary } = useSummaries();
 
   const copyToClipboard = async (text: string, type: string) => {
@@ -95,16 +96,22 @@ export default function TabOneScreen() {
   };
 
   const renderSummary = ({ item }: { item: Summary }) => (
-    <View style={styles.summaryCard}>
+    <View style={[
+      styles.summaryCard,
+      {
+        backgroundColor: colors.card,
+        borderColor: colors.border,
+      }
+    ]}>
       <TouchableOpacity
         style={styles.summaryContent}
         onPress={() => handleSummaryPress(item)}
       >
-        <Text style={styles.summaryTitle}>{item.title}</Text>
-        <Text style={styles.summaryText} numberOfLines={3}>
+        <Text style={[styles.summaryTitle, { color: colors.text }]}>{item.title}</Text>
+        <Text style={[styles.summaryText, { color: colors.text, opacity: 0.7 }]} numberOfLines={3}>
           {item.content}
         </Text>
-        <Text style={styles.summaryDate}>
+        <Text style={[styles.summaryDate, { color: colors.text, opacity: 0.5 }]}>
           {new Date(item.createdAt).toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'short',
@@ -115,9 +122,8 @@ export default function TabOneScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Quick Copy Button */}
       <TouchableOpacity
-        style={styles.copyButton}
+        style={[styles.copyButton, { backgroundColor: colors.background }]}
         onPress={() => handleQuickCopy(item)}
       >
         <Text style={styles.copyButtonText}>📋</Text>
@@ -130,7 +136,7 @@ export default function TabOneScreen() {
       <Text style={styles.title}>Summaries</Text>
 
       {error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Text style={[styles.error, { color: colors.notification }]}>{error}</Text>
       ) : (
         <FlatList
           data={summaries}
@@ -143,7 +149,7 @@ export default function TabOneScreen() {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
+              <Text style={[styles.emptyText, { color: colors.text, opacity: 0.6 }]}>
                 No summaries yet. Record some speech to get started!
               </Text>
             </View>
@@ -154,6 +160,7 @@ export default function TabOneScreen() {
   );
 }
 
+// Update styles to remove hardcoded colors
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -173,11 +180,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   summaryCard: {
-    backgroundColor: '#f9f9f9',
     marginVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -194,24 +199,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#333',
   },
   summaryText: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#666',
     marginBottom: 8,
   },
   summaryDate: {
     fontSize: 12,
-    color: '#999',
     fontStyle: 'italic',
   },
   copyButton: {
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
     marginLeft: 8,
@@ -227,12 +228,10 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',
   },
   error: {
-    color: 'red',
     textAlign: 'center',
     marginVertical: 16,
   },
