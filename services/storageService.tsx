@@ -225,3 +225,37 @@ export const getWhisperModel = async (): Promise<string> => {
     return 'whisper-large-v3';
   }
 };
+
+export const saveGeminiSettings = async (settings: {
+  prompt?: string;
+  temperature?: number;
+  topK?: number;
+  topP?: number;
+  maxOutputTokens?: number;
+}) => {
+  try {
+    await AsyncStorage.setItem('gemini_settings', JSON.stringify(settings));
+  } catch (error) {
+    throw new Error('Failed to save Gemini settings');
+  }
+};
+
+export const getGeminiSettings = async () => {
+  try {
+    const settings = await AsyncStorage.getItem('gemini_settings');
+    if (settings) {
+      return JSON.parse(settings);
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const clearGeminiSettings = async () => {
+  try {
+    await AsyncStorage.removeItem('gemini_settings');
+  } catch (error) {
+    throw new Error('Failed to clear Gemini settings');
+  }
+};
