@@ -104,6 +104,13 @@ export default function DrawerLayout() {
           }}
         />
         <Drawer.Screen
+          name="login"
+          options={{
+            headerTitle: "Authentication",
+            drawerLabel: "Login",
+          }}
+        />
+        <Drawer.Screen
           name="modal"
           options={{
             headerTitle: "Settings",

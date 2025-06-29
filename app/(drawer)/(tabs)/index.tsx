@@ -94,7 +94,6 @@ export default function TabOneScreen() {
     );
   };
 
-  // ...rest of your component remains exactly the same
   const renderSummary = ({ item }: { item: Summary }) => (
     <View style={styles.summaryCard}>
       <TouchableOpacity
@@ -155,7 +154,6 @@ export default function TabOneScreen() {
   );
 }
 
-// ...styles remain exactly the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,

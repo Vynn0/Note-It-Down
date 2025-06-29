@@ -181,7 +181,7 @@ export default function ModalScreen() {
         {/* Groq API Key Section */}
         <View style={styles.settingContainer}>
           <Text style={styles.settingLabel}>
-            Groq API Key {isUsingDefaultGroq ? '(Using Default)' : '(Custom)'}:
+            Groq API Key {isUsingDefaultGroq ? '(Using Default - REQUIRED)' : '(Custom - REQUIRED)'}:
           </Text>
           <TextInput
             style={styles.textInput}
@@ -204,7 +204,7 @@ export default function ModalScreen() {
         {/* Gemini API Key Section */}
         <View style={styles.settingContainer}>
           <Text style={styles.settingLabel}>
-            Gemini API Key {isUsingDefaultGemini ? '(Using Default)' : '(Custom)'}:
+            Gemini API Key {isUsingDefaultGemini ? '(Using Default - REQUIRED)' : '(Custom - REQUIRED)'}:
           </Text>
           <TextInput
             style={styles.textInput}
