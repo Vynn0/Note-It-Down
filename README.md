@@ -4,7 +4,7 @@
 
 ## What is Note-It-Down?
 
-Note-It-Down is a mobile application designed specifically for students and professionals who want to capture and process spoken content efficiently. Whether you're in a lecture hall, attending a seminar, or participating in a meeting, this app helps you record, transcribe, and summarize audio content using cutting-edge AI technology.
+Note-It-Down is a mobile application designed specifically for students and professionals who want to capture and process spoken content efficiently. Whether you're in a lecture hall, attending a seminar, or participating in a meeting, this app helps you record, transcribe, and summarize audio content using AI technology.
 
 ### Key Features
 
