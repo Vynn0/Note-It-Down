@@ -34,18 +34,18 @@ Note-It-Down is a mobile application designed specifically for students and prof
 
 ## Screenshots
 
-**Dashboard
+**Dashboard**
 
 ![image](https://github.com/user-attachments/assets/e311c118-abea-4dc1-b105-e054dd3a5396)
 
-**Record
+**Record**
 
 ![image](https://github.com/user-attachments/assets/1efb5d7d-fde0-4b39-b886-b83cd9e22987)
 
-**Authentication
+**Authentication**
 
 ![image](https://github.com/user-attachments/assets/48222535-08fb-4520-9a84-e0eac35792f3)
 
-**Settings
+**Settings**
 
 ![image](https://github.com/user-attachments/assets/44fdc9e6-0255-4b7d-bc12-452a49afc096)
