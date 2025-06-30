@@ -49,3 +49,22 @@ Note-It-Down is a mobile application designed specifically for students and prof
 **Settings**
 
 ![image](https://github.com/user-attachments/assets/44fdc9e6-0255-4b7d-bc12-452a49afc096)
+
+## Transcription Models
+
+Choose the perfect Whisper model for your needs:
+
+### 🚀 Whisper Large V3 Turbo
+- **Language Support**: Multilingual
+- **Best For**: Fast, accurate transcription in multiple languages
+- **Description**: A fine-tuned version of a pruned Whisper Large V3 designed for fast, multilingual transcription tasks
+
+### ⚡ Distil-Whisper English
+- **Language Support**: English-only
+- **Best For**: Fastest processing for English content
+- **Description**: A distilled, compressed version of OpenAI's Whisper model, designed to provide faster, lower-cost English speech recognition while maintaining comparable accuracy
+
+### 🎯 Whisper Large-v3
+- **Language Support**: Multilingual
+- **Best For**: Maximum accuracy for complex multilingual content
+- **Description**: Provides state-of-the-art performance with high accuracy for multilingual transcription and translation tasks
