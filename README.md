@@ -52,7 +52,7 @@ Note-It-Down is a mobile application designed specifically for students and prof
 
 ## Transcription Models
 
-Choose the perfect Whisper model for your needs:
+Choose the perfect Whisper model for your needs provided by Groq:
 
 ### 🚀 Whisper Large V3 Turbo
 - **Language Support**: Multilingual
